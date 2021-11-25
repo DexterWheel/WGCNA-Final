@@ -1,0 +1,52 @@
+Gene ID
+Gene Symbol
+Gene Name
+Proteome Short Description
+Swissprot ID
+Chromosome
+
+go_id
+name_1006
+definition_1006
+namespace_1003
+embl
+ensembl_peptide_id
+ensembl_exon_id
+ensembl_transcript_id
+entrezgene_accession
+entrezgene_description
+entrezgene_id
+external_gene_source
+external_synonym
+gene_biotype
+interpro
+interpro_description
+interpro_short_description
+kegg_enzyme
+pdb
+peptide
+peptide_location
+pfam	
+pirsf
+plant_reactome_pathway
+plant_reactome_reaction
+refseq_dna
+refseq_peptide
+rfam
+sfld
+sift_prediction_2076
+sift_score_2076
+source
+source_description
+superfamily
+tigrfam
+transcript_biotype
+uniparc
+uniprotsptrembl
+uniprotswissprot
+wheatexp_gene
+wheatexp_trans
+
+
+
+

@@ -1,0 +1,16 @@
+leaf	root	fruit	stem	inflorescence	grm_lfdev	tlrng	stm_elong	flr_emrg	frt_dev	dogh_dev	ref
+1	0	0	0	0	1	0	0	0	0	0	leaf_Z_BBCH_09_10
+1	0	0	0	0	0	1	0	0	0	0	leaf_Z_BBCH_23
+1	0	0	0	0	0	0	0	0	1	0	leaf_Z_BBCH_71
+0	1	0	0	0	1	0	0	0	0	0	root_Z_BBCH_09_10
+0	1	0	0	0	1	0	0	0	0	0	root_Z_BBCH_13
+0	1	0	0	0	0	0	1	0	0	0	root_Z_BBCH_39
+0	0	1	0	0	0	0	0	0	1	0	fruit_Z_BBCH_71
+0	0	1	0	0	0	0	0	0	1	0	fruit_Z_BBCH_75_79
+0	0	1	0	0	0	0	0	0	0	1	fruit_Z_BBCH_80_89
+0	0	0	1	0	0	0	1	0	0	0	stem_Z_BBCH_30
+0	0	0	1	0	0	0	1	0	0	0	stem_Z_BBCH_32
+0	0	0	1	0	0	0	0	1	0	0	stem_Z_BBCH_55
+0	0	0	0	1	0	0	1	0	0	0	inflorescence_Z_BBCH_32
+0	0	0	0	1	0	0	1	0	0	0	inflorescence_Z_BBCH_39
+0	0	0	0	1	0	0	0	1	0	0	inflorescence_Z_BBCH_55

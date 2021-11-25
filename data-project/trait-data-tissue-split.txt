@@ -1,0 +1,16 @@
+leaf	root	fruit	stem	inflorescence	dev	ref
+1	0	0	0	0	1	leaf_Z_BBCH_09_10
+1	0	0	0	0	3	leaf_Z_BBCH_23
+1	0	0	0	0	8	leaf_Z_BBCH_71
+0	1	0	0	0	1	root_Z_BBCH_09_10
+0	1	0	0	0	2	root_Z_BBCH_13
+0	1	0	0	0	6	root_Z_BBCH_39
+0	0	1	0	0	8	fruit_Z_BBCH_71
+0	0	1	0	0	9	fruit_Z_BBCH_75_79
+0	0	1	0	0	10	fruit_Z_BBCH_80_89
+0	0	0	1	0	4	stem_Z_BBCH_30
+0	0	0	1	0	5	stem_Z_BBCH_32
+0	0	0	1	0	7	stem_Z_BBCH_55
+0	0	0	0	1	5	inflorescence_Z_BBCH_32
+0	0	0	0	1	6	inflorescence_Z_BBCH_39
+0	0	0	0	1	7	inflorescence_Z_BBCH_55
