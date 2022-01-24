@@ -1,3 +1,5 @@
+library(WGCNA)
+
 #==== 
 # S0 : Sources
 #====
@@ -44,11 +46,11 @@ data_raw0[1:10, 1:15]
 
 
   #Gene_name needs to be removed as it is unnecessary. Gene ids and tissue and development data need to transposed
-data_raw1 = as.data.frame( t(data_raw0[, -c(1:2) ]) )
+data_processed = as.data.frame( t(data_raw0[, -c(1:2) ]) )
   #naming columns after the genes they represent
-names(data_raw1) = data_raw0$Gene_ID
+names(data_processed) = data_raw0$Gene_ID
   #double checking that the names have been properly changed
-data_raw1[1:15, 1:2]
+data_processed[1:15, 1:2]
 
 
 #==== 
@@ -61,7 +63,7 @@ data_raw1[1:15, 1:2]
 
   # we need to remove genes and samples with too many missing values
 
-gsg = goodSamplesGenes(data_raw1, verbose = 3)
+gsg = goodSamplesGenes(data_processed, verbose = 3)
 gsg$allOK
 
   #allok = False and so samples need to be removed
@@ -69,22 +71,22 @@ gsg$allOK
 if (!gsg$allOK){
   #Optionally, print the gene and sample names that were removed:
     if (sum(!gsg$goodGenes)>0)
-      printFlush(paste("Removing genes:", paste(names(data_raw1)[!gsg$goodGenes], collapse = ", ")))
+      printFlush(paste("Removing genes:", paste(names(data_processed)[!gsg$goodGenes], collapse = ", ")))
   if (sum(!gsg$goodSamples)>0)
-    printFlush(paste("Removing samples:", paste(rownames(data_raw1)[!gsg$goodSamples], collapse = ", ")))
+    printFlush(paste("Removing samples:", paste(rownames(data_processed)[!gsg$goodSamples], collapse = ", ")))
   #Remove the offending genes and samples from the data:
-  data_raw1 = data_raw1[gsg$goodSamples, gsg$goodGenes]
+  data_processed = data_processed[gsg$goodSamples, gsg$goodGenes]
     }
 
   #running the code again shows that all undesirable values have been removed
-gsg = goodSamplesGenes(data_raw1, verbose = 3)
+gsg = goodSamplesGenes(data_processed, verbose = 3)
 gsg$allOK
 
 
 ### Next we cluster the samples to see if there are any obvious outliers. 
   #in contrast to clustering genes that will come later)
 
-sampleTree = hclust(dist(data_raw1), method = "average")
+sampleTree = hclust(dist(data_processed), method = "average")
 
 plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5,
      cex.axis = 1.5, cex.main = 2)
@@ -103,7 +105,7 @@ traitData = read.table("data-project/trait-data-tissue-split.txt", header = T)
 dim(traitData); names(traitData)
 
   #
-samples = rownames(data_raw1)
+samples = rownames(data_processed)
 traitRows = match(samples, traitData$ref)
 
 datTraits = traitData[traitRows, -7]
@@ -112,7 +114,7 @@ datTraits = traitData[traitRows, -7]
 rownames(datTraits) = traitData[traitRows, 7]
 
   # Re-cluster samples
-sampleTree2 = hclust(dist(data_raw1), method = "average")
+sampleTree2 = hclust(dist(data_processed), method = "average")
 
   # Convert traits to a color representation
 traitColors = numbers2colors(datTraits, signed = T)
@@ -126,7 +128,7 @@ plotDendroAndColors(sampleTree2, traitColors,
 
 ###save expression and trait data for use in the next steps
 
-save(data_raw1, datTraits, file = "data-processed/wheat-dataInput.RData")
+save(data_processed, datTraits, file = "data-processed/wheat-dataInput.RData")
 
 #====
 # S2.1 : soft threshold selection
@@ -137,7 +139,7 @@ powers = c(c(1:10), seq(from = 12, to=20, by=2))
 powers
 
 # Call the network topology analysis function
-sft = pickSoftThreshold(data_raw1, powerVector = powers, verbose = 5, networkType = "signed")
+sft = pickSoftThreshold(data_processed, powerVector = powers, verbose = 5, networkType = "signed")
 
 # Plot the results:
 sizeGrWindow(9, 5)
@@ -176,7 +178,7 @@ text(sft$fitIndices[,1],
 
 #Constructing the gene network and identifying modules is now a simple function call:
 
-net = blockwiseModules(data_raw1, power = 18, maxBlockSize = 20000,
+net = blockwiseModules(data_processed, power = 18, maxBlockSize = 20000,
                        TOMType = "signed", minModuleSize = 30,
                        reassignThreshold = 0, mergeCutHeight = 0.25,
                        numericLabels = TRUE, pamRespectsDendro = FALSE,
@@ -219,7 +221,7 @@ MEs = net$MEs;
 geneTree = net$dendrograms[[1]];
 save(MEs, moduleLabels, 
      moduleColors, 
-     geneTree,
+     geneTree, net,
      file = "data-processed/wheat-networkConstruction-auto.RData")
 
 
@@ -243,11 +245,11 @@ lnames = load(file = "data-processed/wheat-dataInput.RData")
 lnames
 
 # Define numbers of genes and samples
-nGenes = ncol(data_raw1)
-nSamples = nrow(data_raw1)
+nGenes = ncol(data_processed)
+nSamples = nrow(data_processed)
 
 # Recalculate MEs with color labels
-MEs0 = moduleEigengenes(data_raw1, moduleColors)$eigengenes
+MEs0 = moduleEigengenes(data_processed, moduleColors)$eigengenes
 MEs = orderMEs(MEs0)
 moduleTraitCor = cor(MEs, datTraits, use = "p")
 moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples)
@@ -293,7 +295,7 @@ labeledHeatmap(Matrix = moduleTraitCor,
 #####
 # tissue
 #####
-# Define variable weight containing the weight column of datTrait
+# Define variable leaf containing the leaf column of datTrait
 leaf = as.data.frame(datTraits$leaf)
 #rename column
 names(leaf) = "leaf"
@@ -301,13 +303,13 @@ names(leaf) = "leaf"
 # names (colors) of the modules
 modNames = substring(names(MEs), 3)
 
-geneModuleMembership = as.data.frame(cor(data_raw1, MEs, use = "p"))
+geneModuleMembership = as.data.frame(cor(data_processed, MEs, use = "p"))
 MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
 
 names(geneModuleMembership) = paste("MM", modNames, sep="")
 names(MMPvalue) = paste("p.MM", modNames, sep="")
 
-geneTraitSignificance = as.data.frame(cor(data_raw1, leaf, use = "p"))
+geneTraitSignificance = as.data.frame(cor(data_processed, leaf, use = "p"))
 GSPvalue = as.data.frame(corPvalueStudent(as.matrix(geneTraitSignificance), nSamples))
 
 names(geneTraitSignificance) = paste("GS.", names(leaf), sep="")
@@ -356,13 +358,13 @@ names(dev) = "dev"
 # names (colors) of the modules
 modNames = substring(names(MEs), 3)
 
-geneModuleMembership = as.data.frame(cor(data_raw1, MEs, use = "p"))
+geneModuleMembership = as.data.frame(cor(data_processed, MEs, use = "p"))
 MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
 
 names(geneModuleMembership) = paste("MM", modNames, sep="")
 names(MMPvalue) = paste("p.MM", modNames, sep="")
 
-geneTraitSignificance = as.data.frame(cor(data_raw1, dev, use = "p"))
+geneTraitSignificance = as.data.frame(cor(data_processed, dev, use = "p"))
 GSPvalue = as.data.frame(corPvalueStudent(as.matrix(geneTraitSignificance), nSamples))
 
 names(geneTraitSignificance) = paste("GS.", names(dev), sep="")
@@ -395,10 +397,10 @@ verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
 #such as MS Excel or Open Office Calc.
 
 ###Our expression data are only annotated by probe ID names: the command
-names(data_raw1)
+names(data_processed)
 ###will return all probe IDs included in the analysis. Similarly,
 
-names(data_raw1)[moduleColors=="brown"]
+names(data_processed)[moduleColors=="brown"]
 ###will return probe IDs belonging to the brown module. 
 
 ###To facilitate interpretation of the results, 
@@ -411,7 +413,7 @@ rownames(datTraits) = traitData[traitRows, 7]
 
 dim(annotation_final)
 names(annotation_final)
-probes = names(data_raw1)
+probes = names(data_processed)
 probes2annot = match(probes, annotation_final$ensembl_gene_id)
 
 
@@ -473,9 +475,7 @@ lnames
 # Load network data saved in the second part.
 lnames = load(file = "data-processed/wheat-dataInput.RData")
 
-###Our previous analysis has identified several modules (labeled brown, red, and salmon) that are highly associated with weight.
-
-###To facilitate a biological interpretation, we would like to know the gene ontologies of the genes in the modules, whether they are significantly enriched in certain functional categories etc
+###To facilitate a biological interpretation, we would like to know the gene ontologies of the genes in our modules, whether they are significantly enriched in certain functional categories etc
 
 #==== 
 # S4.1   Output gene lists for use with online software and services
@@ -485,16 +485,16 @@ lnames = load(file = "data-processed/wheat-dataInput.RData")
 #that can be used as input for several popular gene ontology
 #and functional enrichment analysis suites such as David or AmiGO. 
 
-###For example, we write out the LocusLinkID (entrez) codes for the brown module into a file:
+###For example, we write out the ensembl_gene_id codes for the modules into a file:
 getwd()
-# Read in the probe annotation
+# Read in the probe annotation created earlier via the biomart database
 lnames = load(file = "data-project/annotation-final.RData")
 
 # Match probes in the data set to the probe IDs in the annotation file
-probes = names(data_raw1)
+probes = names(data_processed)
 probes2annot = match(probes, annotation_final$ensembl_gene_id)
 
-# Get the corresponding Locuis Link IDs
+# Get the corresponding ensembl_gene_id
 allLLIDs = annotation_final$ensembl_gene_id[probes2annot]
 
 
@@ -516,8 +516,10 @@ for (module in intModules){
               row.names = FALSE, col.names = FALSE)
 }
 
+#the above code just selects and makes a list of genes within the brown red and salmon modules via their ensmbl gene ids
+
 # As background in the enrichment analysis, we will use all probes in the analysis.
-fileName = paste("data-processed/LocusLinkIDs-all.txt", sep="");
+fileName = paste("data-processed/ensemblgeneid-all.txt", sep="");
 write.table(as.data.frame(allLLIDs), file = fileName,
             row.names = FALSE, col.names = FALSE)
 
@@ -595,8 +597,8 @@ lnames
 # Load network data saved in the second part.
 lnames = load(file = "data-processed/wheat-networkConstruction-auto.RData")
 lnames
-nGenes = ncol(data_raw1)
-nSamples = nrow(data_raw1)
+nGenes = ncol(data_processed)
+nSamples = nrow(data_processed)
 
 #==== 
 #5.a   Visualizing the gene network
@@ -665,7 +667,7 @@ TOMplot(plotDiss, selectTree, selectColors, main = "Network heatmap plot, select
 
 
 # Recalculate module eigengenes
-MEs = moduleEigengenes(data_raw1, moduleColors)$eigengenes
+MEs = moduleEigengenes(data_processed, moduleColors)$eigengenes
 
 # Isolate dev from the clinical traits
 dev = as.data.frame(datTraits$dev);
@@ -735,19 +737,38 @@ lnames
 ###We illustrate a simple export of the full weighted network of a single module.
 
 # Recalculate topological overlap
-TOM = TOMsimilarityFromExpr(data_raw1, power = 6);
+TOM = TOMsimilarityFromExpr(data_processed, power = 6);
+
+lnames = load(file = "data-processed/wheatTOM-block.1.RData")
+
+TOM1 = TOM
+
+lnames = load(file = "data-processed/wheatTOM-block.2.RData")
+
+TOM2 = TOM
+
+lnames = load(file = "data-processed/wheatTOM-block.3.RData")
+
+TOM3 = TOM
+
+lnames = load(file = "data-processed/wheatTOM-block.4.RData")
+
+TOM4 = TOM
+
+TOMs = c(TOM1, TOM2, TOM3, TOM4)
+
 # Read in the annotation file
 
 lnames = load(file = "data-project/annotation-final.RData")
 
 # Select module
-module = "brown";
+module = "brown"
 # Select module probes
-probes = names(data_raw1)
-inModule = (moduleColors==module);
-modProbes = probes[inModule];
+probes = names(data_processed)
+inModule = (moduleColors==module)
+modProbes = probes[inModule]
 # Select the corresponding Topological Overlap
-modTOM = TOM[inModule, inModule];
+modTOM = TOM[inModule, inModule]
 dimnames(modTOM) = list(modProbes, modProbes)
 # Export the network into an edge list file VisANT can read
 vis = exportNetworkToVisANT(modTOM,
@@ -760,7 +781,7 @@ vis = exportNetworkToVisANT(modTOM,
 #we can restrict the genes in the output to say the 30 top hub genes in the module:
 
 nTop = 30;
-IMConn = softConnectivity(data_raw1[, modProbes]);
+IMConn = softConnectivity(data_processed[, modProbes]);
 top = (rank(-IMConn) <= nTop)
 vis = exportNetworkToVisANT(modTOM[top, top],
                             file = paste("export/VisANTInput-", module, "-top30.txt", sep=""),
@@ -777,16 +798,37 @@ vis = exportNetworkToVisANT(modTOM[top, top],
 ### Here we demonstrate the output of two modules, the red and brown ones, to Cytoscape.
 
 # Recalculate topological overlap if needed
-TOM = TOMsimilarityFromExpr(data_raw1, power = 6)
+TOM = TOMsimilarityFromExpr(data_processed, power = 6)
+
+
+lnames = load(file = "data-processed/wheatTOM-block.1.RData")
+
+TOM1 = TOM
+
+lnames = load(file = "data-processed/wheatTOM-block.2.RData")
+
+TOM2 = TOM
+
+lnames = load(file = "data-processed/wheatTOM-block.3.RData")
+
+TOM3 = TOM
+
+lnames = load(file = "data-processed/wheatTOM-block.4.RData")
+
+TOM4 = TOM
+
+TOMs = c(TOM1, TOM2, TOM3, TOM4)
+
 
 # Read in the annotation file
 lnames = load(file = "data-project/annotation-final.RData")
 
+annot = annotation_final
 # Select modules
 modules = c("brown", "red")
 
 # Select module probes
-probes = names(data_raw1)
+probes = names(data_processed)
 inModule = is.finite(match(moduleColors, modules))
 modProbes = probes[inModule]
 modGenes = annot$gene_symbol[match(modProbes, annot$ensembl_gene_id)]

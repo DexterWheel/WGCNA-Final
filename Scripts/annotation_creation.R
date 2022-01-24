@@ -1,3 +1,6 @@
+#### Important ####
+#this code does not account for the fact that some attributes such as GO ids can have multiple matches to the same gene
+
 library(biomaRt)
 library(rlist)
 library(tidyverse)
@@ -33,7 +36,7 @@ att = c("description", "source", "source_description",
          "refseq_peptide", "plant_reactome_pathway",
          "plant_reactome_reaction", "sift_prediction_2076",
          "sift_score_2076", "superfamily", "tigrfam", "transcript_biotype")
-##### 
+#####
 
 mart.hs = useMart("plants_mart", "taestivum_eg_gene", host="https://plants.ensembl.org")
 
@@ -42,7 +45,7 @@ attributes = listAttributes(mart.hs)
 lnames = load(file = "data-project/annotation.RData")
 lnames = load(file = "data-processed/wheat-dataInput.RData")
 
-data_raw2 = as.data.frame(t(data_raw1))
+data_raw2 = as.data.frame(t(data_processed))
 
 IDs = rownames(data_raw2)
 
@@ -69,40 +72,89 @@ for (i in att){
 #naming the data frames after their attributes
 names(annot_list) = att
 
-save(annot_list, file = "data-project/annotation2.RData")
+save(annot_list, file = "data-project/annotation.RData")
 
 #====
 # tidying data
 #====
 
-lnames = load(file = "data-project/annotation.RData")
-lnames = load(file = "data-processed/wheat-dataInput.RData")
+lnames = load(file = "annotation.RData")
 
-data_raw2 = as.data.frame(t(data_raw1))
+#first we need to select the attributes we want to keep, due to issues with biomart we can no longer access it, so we must instead trim the data we have already recieved
 
-samples = rownames(data_raw2)
-
-names(annot_list)
+att = c("go_id", "description", "gene_biotype", "transcript_biotype", "name_1006", "interpro", "interpro_short_description",
+        "chromosome_name",  "pdb", "uniparc", "uniprotsptrembl", "uniprotswissprot",
+        "external_gene_source",  "superfamily", "source", "source_description")
 
 annot_list2 = list()
 
-for (names in annot_list){
+for (i in att){
   
-  i = print(names)
+  name = print(i)
+  temp = annot_list[[i]]
   
-  traitRows = match(samples, i$ensembl_gene_id)
+  temp_list= list(temp)
+  
+  annot_list2 = c(annot_list2,temp_list)
+}
+
+names(annot_list2) = att
+#we then need to consolidate duplicate rows together
+dfs = names(annot_list2)
+
+annot_list3 = list()
+
+for (i in dfs){
+  
+  x = annot_list2[[i]]
+  
+  y = annot_list2[[i]][[2]]
+  
+  columns = colnames(x)
+  
+  attribute = columns[2]
+  
+  temp = aggregate(y ~ ensembl_gene_id, data = x, paste, collapse = ",")
+  
+  names(temp)[names(temp) == "y"] = attribute
+  
+  lists = list(temp)
+  
+  #appending the dataframe to an existing list of dataframes
+  annot_list3 = c(annot_list3, lists)
+  }
+
+names(annot_list3) = att
+
+#loading in input data to use the ids as reference
+lnames = load(file = "data-processed/wheat-dataInput.RData")
+
+data_raw2 = as.data.frame(t(data_processed))
+
+samples = rownames(data_raw2)
+
+#making an empty list
+
+annot_list4 = list()
+
+for (names in annot_list3){
+  
+  i = names
+  
+  traitRows = match(samples, names$ensembl_gene_id)
   
   a = names[traitRows,]
   
   list = list(a)
   
   #appending the dataframe to an existing list of dataframes
-  annot_list2 = c(annot_list2, list)
+  annot_list4 = c(annot_list4, list)
   
   }
 
+names(annot_list4) = att
 
-annotation_final <- annot_list2 %>% reduce(left_join, by = "ensembl_gene_id")
+annotation_final <- annot_list4 %>% reduce(left_join, by = "ensembl_gene_id")
 
 save(annotation_final, file = "data-project/annotation-final.RData")
 
