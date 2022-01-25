@@ -65,10 +65,26 @@ write.table(as.data.frame(allLLIDs), file = fileName,
 #4.b   Enrichment analysis 
 #====
 
+#figure out which go terms are found in a module and which are most strongly associated
+
+#we need:
+
+#go ids
+#all genes
+#the genes within the module
+#module membership
+
 lnames = load(file = "data-processed/wheat-dataInput.RData")
 lnames = load(file = "data-project/annotation-final.RData")
-
+gene_info = read.csv("DO_NOT_COMMIT/geneInfo_dev.csv")
 go_as_list = setNames(as.list(go[,2]), go[,1])
+
+geneNames <- names(go_as_list)
+
+y <- as.integer(sapply(eset$BT, function(x) return(substr(x, 1, 1) == 'T')))
+
+table(y)
+
 
 #does not load need to rework code
 load(file = "data-processed/LocusLinkIDs-all.txt")
@@ -88,8 +104,7 @@ modProbes = probes[inModule]
 #subsetting the original dataset for just the brown module genes
 brown = data_processed[modProbes]
 
-geneID2GO <- readMappings(file = system.file("examples/geneid2go.map", package = "topGO"))
-str(head(geneID2GO))
+
 
 
 
