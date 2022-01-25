@@ -1,7 +1,7 @@
 #==== 
 # S4.0  Interfacing network analysis with other data such as functional annotation and gene ontology
 #====      
-
+library(topGO)
 library(WGCNA)
 library(org.Mm.eg.db)
 # The following setting is important, do not omit.
@@ -26,7 +26,7 @@ lnames = load(file = "data-processed/wheat-dataInput.RData")
 ###For example, we write out the ensembl_gene_id codes for the modules into a file:
 getwd()
 # Read in the probe annotation created earlier via the biomart database
-lnames = load(file = "data-project/annotation-final.RData")
+lnames = load(file = "data-processed/annotation-final.RData")
 
 # Match probes in the data set to the probe IDs in the annotation file
 probes = names(data_processed)
@@ -65,29 +65,31 @@ write.table(as.data.frame(allLLIDs), file = fileName,
 #4.b   Enrichment analysis 
 #====
 
+lnames = load(file = "data-processed/wheat-dataInput.RData")
+lnames = load(file = "data-project/annotation-final.RData")
 
+go_as_list = setNames(as.list(go[,2]), go[,1])
 
+#does not load need to rework code
+load(file = "data-processed/LocusLinkIDs-all.txt")
 
+allLLIDs
+brownLLIDs = names(data_processed)[moduleColors=="brown"]
 
+# Select module
+module = "brown"
+# Select module probes
+probes = names(data_processed)
+inModule = (moduleColors==module)
+modProbes = probes[inModule]
 
+#modProbes provides us with the list of genes we need to select from the original dataset 
 
+#subsetting the original dataset for just the brown module genes
+brown = data_processed[modProbes]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+geneID2GO <- readMappings(file = system.file("examples/geneid2go.map", package = "topGO"))
+str(head(geneID2GO))
 
 
 

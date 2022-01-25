@@ -78,7 +78,7 @@ save(annot_list, file = "data-project/annotation.RData")
 # tidying data
 #====
 
-lnames = load(file = "annotation.RData")
+lnames = load(file = "data-processed/annotation.RData")
 
 #first we need to select the attributes we want to keep, due to issues with biomart we can no longer access it, so we must instead trim the data we have already recieved
 
@@ -125,6 +125,32 @@ for (i in dfs){
   }
 
 names(annot_list3) = att
+annot_list4 = list()
+
+for (i in dfs){
+  
+  x = annot_list2[[i]]
+  
+  y = annot_list2[[i]][[2]]
+  
+  columns = colnames(x)
+  
+  attribute = columns[2]
+  
+  temp = aggregate(y ~ ensembl_gene_id, data = x, paste)
+  
+  names(temp)[names(temp) == "y"] = attribute
+  
+  lists = list(temp)
+  
+  #appending the dataframe to an existing list of dataframes
+  annot_list4 = c(annot_list3, lists)
+}
+
+names(annot_list4) = att
+
+go = annot_list4[[1]]
+
 
 #loading in input data to use the ids as reference
 lnames = load(file = "data-processed/wheat-dataInput.RData")
@@ -156,7 +182,7 @@ names(annot_list4) = att
 
 annotation_final <- annot_list4 %>% reduce(left_join, by = "ensembl_gene_id")
 
-save(annotation_final, file = "data-project/annotation-final.RData")
 
+save(annotation_final, go, file = "data-project/annotation-final.RData")
 
 
