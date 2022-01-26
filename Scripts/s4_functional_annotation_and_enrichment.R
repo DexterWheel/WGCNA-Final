@@ -4,6 +4,8 @@
 library(topGO)
 library(WGCNA)
 library(org.Mm.eg.db)
+library(tidyverse)
+library(dplyr)
 # The following setting is important, do not omit.
 options(stringsAsFactors = FALSE)
 
@@ -74,28 +76,74 @@ write.table(as.data.frame(allLLIDs), file = fileName,
 #the genes within the module
 #module membership
 
+lnames = load(file = "data-processed/wheat-networkConstruction-auto.RData")
 lnames = load(file = "data-processed/wheat-dataInput.RData")
 lnames = load(file = "data-project/annotation-final.RData")
 gene_info = read.csv("DO_NOT_COMMIT/geneInfo_dev.csv")
 go_as_list = setNames(as.list(go[,2]), go[,1])
 
-geneNames <- names(go_as_list)
-
-y <- as.integer(sapply(eset$BT, function(x) return(substr(x, 1, 1) == 'T')))
-
-table(y)
+geneNames = names(go_as_list)
 
 
 #does not load need to rework code
 load(file = "data-processed/LocusLinkIDs-all.txt")
 
-allLLIDs
-brownLLIDs = names(data_processed)[moduleColors=="brown"]
+myInterestingGenes = names(data_processed)[moduleColors=="brown"]
+
+write.table(file = "brown.txt", myInterestingGenes)
+
+geneNames = names(data_processed)
+
+geneList = factor(as.integer(geneNames %in% myInterestingGenes))
+
+names(geneList) = geneNames
+
+str(geneList)
+
+#MF loecular function
+
+#BP biological process
+
+#CC cellular component
+
+c("MF", "BP", "CC")
+
+GOdata = new("topGOdata", ontology = "BP", allGenes = geneList, annot = annFUN.gene2GO, gene2GO = go_as_list)
+
+#fisher test selected based on figure 4
+
+test.stat = new("classicCount", testStatistic = GOFisherTest, name = "Fisher test")
+resultFisher = getSigGroups(GOdata, test.stat)
+
+resultFis = runTest(GOdata, algorithm = "classic", statistic = "fisher")
+
+resultFis
+
+# extracting p values so that they can be adjusted for multiple comparison
+
+p_scores = resultFis@score
+
+resultFDR = as.data.frame((p.adjust(p_scores, "fdr")))
+
+resultFDR[,2] = rownames(resultFDR)
+
+head(score(resultFis))
+
+pvalFis = score(resultFis)
+
+pvalFDR = score(resultFDR)
+
+hist(pvalFis, 50, xlab = "p-values", ylim = c(0, 200))
+hist(resultFDR$`(p.adjust(p_scores, "fdr"))`, 50, xlab = "p-values", ylim = c(0, 200))
+
+allRes = GenTable(GOdata, classic = resultFis, topNodes = 843)
+
+allRes = left_join(allRes, resultFDR, by = c("GO.ID" = "V2"))
 
 # Select module
 module = "brown"
 # Select module probes
-probes = names(data_processed)
+
 inModule = (moduleColors==module)
 modProbes = probes[inModule]
 
