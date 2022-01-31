@@ -86,7 +86,19 @@ geneNames = names(go_as_list)
 
 
 #does not load need to rework code
-load(file = "data-processed/LocusLinkIDs-all.txt")
+#load(file = "data-processed/LocusLinkIDs-all.txt")
+
+module_list = c("brown", "red")
+
+
+
+for (i in module_list){
+  
+  temp = names(data_processed)[moduleColors== i ]
+  
+  
+  
+  myInterestingGenes
 
 myInterestingGenes = names(data_processed)[moduleColors=="brown"]
 
@@ -100,45 +112,60 @@ names(geneList) = geneNames
 
 str(geneList)
 
-#MF loecular function
+#MF molecular function
 
 #BP biological process
 
 #CC cellular component
 
-c("MF", "BP", "CC")
+go_types = c("MF", "BP" , "CC")
 
-GOdata = new("topGOdata", ontology = "BP", allGenes = geneList, annot = annFUN.gene2GO, gene2GO = go_as_list)
+for (i in go_types) {
+  
+  GOdata_temp = new("topGOdata", ontology = i,
+                    allGenes = geneList,
+                    annot = annFUN.gene2GO,
+                    gene2GO = go_as_list)
+  
+  #fisher test selected based on figure 4
+  
+  test.stat = new("classicCount", testStatistic = GOFisherTest, name = "Fisher test")
+  
+  resultFisher = getSigGroups(GOdata_temp, test.stat)
+  
+  resultFis = runTest(GOdata_temp, algorithm = "classic", statistic = "fisher")
+  
+  # extracting p values so that they can be adjusted for multiple comparison
+  
+  p_scores = resultFis@score
+  resultFDR = as.data.frame(signif((p.adjust(p_scores, "fdr")), 3))
+  resultFDR[,2] = rownames(resultFDR)
+  
+  pvalFis = score(resultFis)
+  #pvalFDR = score(resultFDR)
+  
+  hist(pvalFis, 50, xlab = "p-values", ylim = c(0, 200))
+  
+  hist(resultFDR[, 1], 50, xlab = "p-values", ylim = c(0, 200))
+  
+  top_nodes = nrow(resultFDR)
+  
+  allRes = GenTable(GOdata_temp, classic = resultFis, topNodes = top_nodes)
+  
+  allRes = left_join(allRes, resultFDR, by = c("GO.ID" = "V2"))
+  
+  newname = i
+  
+  assign(newname, allRes)
+  
+  }
 
-#fisher test selected based on figure 4
 
-test.stat = new("classicCount", testStatistic = GOFisherTest, name = "Fisher test")
-resultFisher = getSigGroups(GOdata, test.stat)
+str(resultFDR[1,])
 
-resultFis = runTest(GOdata, algorithm = "classic", statistic = "fisher")
+number = 1.18798732
 
-resultFis
-
-# extracting p values so that they can be adjusted for multiple comparison
-
-p_scores = resultFis@score
-
-resultFDR = as.data.frame((p.adjust(p_scores, "fdr")))
-
-resultFDR[,2] = rownames(resultFDR)
-
-head(score(resultFis))
-
-pvalFis = score(resultFis)
-
-pvalFDR = score(resultFDR)
-
-hist(pvalFis, 50, xlab = "p-values", ylim = c(0, 200))
-hist(resultFDR$`(p.adjust(p_scores, "fdr"))`, 50, xlab = "p-values", ylim = c(0, 200))
-
-allRes = GenTable(GOdata, classic = resultFis, topNodes = 843)
-
-allRes = left_join(allRes, resultFDR, by = c("GO.ID" = "V2"))
+number2 = signif(number, 2)
 
 # Select module
 module = "brown"

@@ -180,8 +180,7 @@ for (names in annot_list3){
 
 names(annot_list4) = att
 
-annotation_final <- annot_list4 %>% reduce(left_join, by = "ensembl_gene_id")
-
+annotation_final = annot_list4 %>% reduce(left_join, by = "ensembl_gene_id")
 
 save(annotation_final, go, file = "data-project/annotation-final.RData")
 
