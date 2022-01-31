@@ -1,0 +1,143 @@
+Leaf down:
+yellow 4 -0.55
+paleturquoise -0.45
+yellowgreen -0.44
+skyblue1 -0.48
+saddlebrown -0.51
+green -0.44
+red -0.51
+blue -0.46
+
+Leaf up:
+brown 0.82
+skyblue3 0.64
+lightsteelblue1 0.88
+darkgrey 0.64
+pink 0.63
+
+root up:
+grey 0.62
+dark green 0.43
+green 0.43
+dark red 0.58
+lightcyan 0.53
+yellow 0.89
+lightgreen 0.85
+lavenderblush3 0.7
+darkolivegreen 0.42
+thistle1 0.51
+mediumpurple3 0.42
+orange 0.55
+paleturquoise 0.7
+
+fruit up:
+yellow4 0.44
+coral1 0.83
+skyblue 0.69
+saddlebrown 0.43
+dark orange2 0.51
+palevioletred3 0.52
+turquoise 0.42
+
+fruit down:
+grey -0.51
+darkturquoise -0.43
+darkgreen -0.41
+coral2 -0.63
+lightpink4 -0.56
+green -0.53
+cyan -0.49
+light cyan -0.59
+lavenderblush3 -0.41
+
+Stem up:
+darkturquoise 0.45
+skyblue2 0.8
+midnightblue 0.61
+navajowhite2 0.44
+orangered4 0.59
+honeydew 1 0.58
+purple 0.61
+lightcyan 0.5
+
+Inflorescence up:
+darkorange 0.41
+lightpink4 0.45
+violet 0.48
+darkmagenta 0.85
+blue 0.8
+black 0.67
+red 0.58
+cyan 0.56
+ivory 0.45
+plum1 0.41
+salmon 0.62
+bisque4 0.45
+floralwhite 0.6
+
+lf dev:
+royalblue 0.63
+lightgreen 0.5
+lavenderblush3 0.4
+orange 0.46
+
+tillering:
+lightpink4 0.57
+darkgrey 0.94
+lightsteelblue1 0.5
+mediumorchid 0.61
+plum 0.59
+lightcyan1 0.43
+
+stem elong:
+grey 0.41
+blue 0.48
+black 0.61
+red 0.41
+magenta 0.44
+green 0.61
+midnightblue 0.44
+orangered4 0.48
+honeydew1 0.47
+floralwhite 0.41
+tan 0.4
+coral1 -0.43
+
+flower emegence:
+darkturquoise 0.56
+darkgreen -0.41
+lightpink4 0.44
+violet 0.49
+maroon -0.41
+plum1 0.49
+salmon 0.68
+bisque4 0.41
+purple 0.61
+
+fruit dev:
+siennna3 0.67
+pink 0.43
+lightpink4 -0.41
+maroon 0.41
+red -0.45
+magenta -0.6
+green-0.52
+purple-0.41
+lightcyan -0.52
+darkolivegreen -0.48
+skyblue 0.65
+coral1 0.9
+darkslateblue 0.73
+
+dough dev:
+violet 0.6
+turquoise 0.96
+brown4 0.73
+grey60 0.69
+mediumorchid 0.68
+palevioletred3 0.45
+red 0.44
+saddlebrown 0.45
+navajowhite2 0.59
+darkolivegreen 0.44
+mediumpurple3 0.49
